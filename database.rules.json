@@ -1,0 +1,138 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid && newData.exists() && ((!data.exists() && newData.child('role').val() == 'neighbor' && newData.child('communityId').val() == 'comunidad01') || (data.exists() && newData.child('role').val() == data.child('role').val() && newData.child('communityId').val() == data.child('communityId').val() && newData.child('home').val() == data.child('home').val()))",
+        ".validate": "newData.hasChildren(['name','home','communityId','role'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80 && !newData.val().matches(/^[ \\t\\r\\n]*$/)"
+        },
+        "home": {
+          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{1,12}$/)"
+        },
+        "role": {
+          ".validate": "newData.val() == 'neighbor' || newData.val() == 'admin'"
+        },
+        "communityId": {
+          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,64}$/)"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "communities": {
+      "$cid": {
+        "messages": {
+          ".read": "auth != null && root.child('users').child(auth.uid).child('communityId').val() == $cid && query.orderByChild == 'createdAt' && query.limitToLast != null && query.limitToLast <= 50",
+          ".indexOn": [
+            "createdAt"
+          ],
+          "$id": {
+            ".write": "auth != null && root.child('users').child(auth.uid).child('communityId').val() == $cid && !data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren([\"uid\", \"name\", \"home\", \"text\", \"createdAt\"])",
+            "uid": {
+              ".validate": "newData.val() == auth.uid"
+            },
+            "name": {
+              ".validate": "newData.val() == root.child('users').child(auth.uid).child('name').val()"
+            },
+            "home": {
+              ".validate": "newData.val() == root.child('users').child(auth.uid).child('home').val()"
+            },
+            "text": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 1000 && !newData.val().matches(/^[ \\t\\r\\n]*$/)"
+            },
+            "createdAt": {
+              ".validate": "newData.isNumber() && newData.val() == now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "announcements": {
+          ".read": "auth != null && root.child('users').child(auth.uid).child('communityId').val() == $cid && query.orderByChild == 'createdAt' && query.limitToLast != null && query.limitToLast <= 50",
+          ".indexOn": [
+            "createdAt"
+          ],
+          "$id": {
+            ".write": "auth != null && root.child('users').child(auth.uid).child('communityId').val() == $cid && root.child('users').child(auth.uid).child('role').val() == 'admin' && !data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren([\"authorUid\", \"authorName\", \"title\", \"body\", \"createdAt\"])",
+            "authorUid": {
+              ".validate": "newData.val() == auth.uid"
+            },
+            "authorName": {
+              ".validate": "newData.val() == root.child('users').child(auth.uid).child('name').val()"
+            },
+            "title": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120 && !newData.val().matches(/^[ \\t\\r\\n]*$/)"
+            },
+            "body": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 4000 && !newData.val().matches(/^[ \\t\\r\\n]*$/)"
+            },
+            "createdAt": {
+              ".validate": "newData.isNumber() && newData.val() == now"
+            },
+            "$other": {
+              ".validate": false
+            },
+            ".read": "auth != null && root.child('users').child(auth.uid).child('communityId').val() == $cid"
+          }
+        },
+        "products": {
+          ".read": "auth != null && root.child('users').child(auth.uid).child('communityId').val() == $cid && query.orderByChild == 'createdAt' && query.limitToLast != null && query.limitToLast <= 50",
+          ".indexOn": [
+            "createdAt"
+          ],
+          "$id": {
+            ".write": "auth != null && root.child('users').child(auth.uid).child('communityId').val() == $cid && !data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren([\"ownerUid\", \"ownerName\", \"home\", \"name\", \"priceCLP\", \"createdAt\"])",
+            "ownerUid": {
+              ".validate": "newData.val() == auth.uid"
+            },
+            "ownerName": {
+              ".validate": "newData.val() == root.child('users').child(auth.uid).child('name').val()"
+            },
+            "home": {
+              ".validate": "newData.val() == root.child('users').child(auth.uid).child('home').val()"
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100 && !newData.val().matches(/^[ \\t\\r\\n]*$/)"
+            },
+            "priceCLP": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000000 && newData.val() % 1 == 0"
+            },
+            "createdAt": {
+              ".validate": "newData.isNumber() && newData.val() == now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
+    },
+    "deviceTokens": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        "$installation": {
+          ".write": "auth != null && auth.uid == $uid && (!newData.exists() || root.child('users').child(auth.uid).exists())",
+          ".validate": "newData.hasChildren(['token','updatedAt'])",
+          "token": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 4096 && !newData.val().matches(/^[ \\t\\r\\n]*$/)"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber() && newData.val() == now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}

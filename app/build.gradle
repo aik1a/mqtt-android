@@ -4,6 +4,7 @@ if (file('google-services.json').exists()) { apply plugin: 'com.google.gms.googl
 android {
     namespace 'cl.aik1a.comunidadconectada'
     compileSdk 35
+    buildToolsVersion "35.0.0"
     defaultConfig {
         applicationId 'cl.aik1a.comunidadconectada'
         minSdk 24
